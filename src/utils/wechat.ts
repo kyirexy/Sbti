@@ -118,8 +118,8 @@ export function buildResultShareMessage(payload: ResultSharePayload): ShareMessa
   const title = `我测出了「${payload.resultTitle}」`;
   const description = trimDescription(payload.resultDescription);
   const text = description
-    ? `我在「${payload.testTitle}」里测出了「${payload.resultTitle}」：${description}\n你也来测测看：`
-    : `我在「${payload.testTitle}」里测出了「${payload.resultTitle}」。\n你也来测测看：`;
+    ? `我正在玩「${payload.testTitle}」，我的测试结果是「${payload.resultTitle}」。\n\n${description}\n\n你也来测测看：`
+    : `我正在玩「${payload.testTitle}」，我的测试结果是「${payload.resultTitle}」。\n\n你也来测测看：`;
 
   return { title, text, url };
 }
@@ -166,24 +166,8 @@ async function copyShareText(text: string): Promise<boolean> {
   }
 }
 
-export async function shareResult(payload: ResultSharePayload): Promise<'shared' | 'copied' | 'cancelled'> {
+export async function shareResult(payload: ResultSharePayload): Promise<'copied' | 'cancelled'> {
   const message = buildResultShareMessage(payload);
-
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: message.title,
-        text: message.text,
-        url: message.url,
-      });
-      return 'shared';
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        return 'cancelled';
-      }
-    }
-  }
-
   const copied = await copyShareText(`${message.text}\n${message.url}`);
   return copied ? 'copied' : 'cancelled';
 }

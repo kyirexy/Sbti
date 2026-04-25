@@ -8,6 +8,7 @@ import { calculateScore, type ScoreResult, type PersonalityScore } from '../util
 import { generatePoster, downloadPoster } from '../utils/poster';
 import { initWechatShare, buildShareConfig, shareResult } from '../utils/wechat';
 import { getPersonalityImageFallback, getPersonalityImageSrcSet } from '../utils/imageAssets';
+import { ResultAd } from '../components/Ad';
 
 // 图标组件
 const TravelIcon = ({ size = 28 }: { size?: number }) => (
@@ -351,7 +352,7 @@ export default function Result() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center py-12 px-6 bg-gradient-to-br ${bgGradient}`}>
+    <div className={`min-h-screen flex flex-col items-center py-12 px-6 bg-gradient-to-br ${bgGradient} lg:flex-row lg:items-start lg:justify-center lg:gap-8`}>
       <motion.div
         ref={resultRef}
         id="poster-container"
@@ -444,7 +445,7 @@ export default function Result() {
         </div>
 
         {/* 人格分析结果列表 */}
-        <div className="px-6 pb-4">
+        <div className="px-6 pb-4" data-poster-exclude="true">
           <div className="text-sm font-bold text-slate-500 mb-3 text-left">人格分析</div>
           <div className="flex flex-col gap-3">
             {scoreResult.topPersonalities.map((p, idx) => (
@@ -505,6 +506,7 @@ export default function Result() {
         </div>
       </motion.div>
 
+      <ResultAd className="mt-5 w-full max-w-md lg:sticky lg:top-8 lg:mt-0 lg:max-w-[320px]" />
     </div>
   );
 }

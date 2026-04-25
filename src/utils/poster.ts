@@ -9,8 +9,8 @@ interface PosterOptions {
 }
 
 const POSTER_WIDTH = 1080;
-const POSTER_HEIGHT = 1920;
-const POSTER_PADDING = 72;
+const POSTER_HEIGHT = 1350;
+const POSTER_PADDING = 60;
 const IMAGE_WAIT_TIMEOUT_MS = 3000;
 
 const SAFE_TEXT_COLORS: Record<string, string> = {

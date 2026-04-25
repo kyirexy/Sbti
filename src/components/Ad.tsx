@@ -13,6 +13,10 @@ interface GoogleAdProps {
   className?: string;
 }
 
+interface PlacementAdProps {
+  className?: string;
+}
+
 const AD_SLOT_IDS: Record<GoogleAdPlacement, string> = {
   'home-feed': import.meta.env.VITE_GOOGLE_ADSENSE_HOME_FEED_SLOT_ID || '',
   'gallery-feed': import.meta.env.VITE_GOOGLE_ADSENSE_GALLERY_FEED_SLOT_ID || '',
@@ -65,14 +69,14 @@ export function GoogleAd({ placement, className = '' }: GoogleAdProps): ReactNod
   );
 }
 
-export function HomeFeedAd(): ReactNode {
-  return <GoogleAd placement="home-feed" className="mt-6 max-w-md" />;
+export function HomeFeedAd({ className = 'mt-6 max-w-md' }: PlacementAdProps = {}): ReactNode {
+  return <GoogleAd placement="home-feed" className={className} />;
 }
 
-export function GalleryFeedAd(): ReactNode {
-  return <GoogleAd placement="gallery-feed" className="mt-6 max-w-3xl" />;
+export function GalleryFeedAd({ className = 'mt-6 max-w-3xl' }: PlacementAdProps = {}): ReactNode {
+  return <GoogleAd placement="gallery-feed" className={className} />;
 }
 
-export function ResultAd(): ReactNode {
-  return <GoogleAd placement="result-bottom" className="mt-6 max-w-md" />;
+export function ResultAd({ className = 'mt-6 max-w-md' }: PlacementAdProps = {}): ReactNode {
+  return <GoogleAd placement="result-bottom" className={className} />;
 }
