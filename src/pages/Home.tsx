@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { TEST_LIST } from '../data/testConfigs';
 import { ChevronRight } from 'lucide-react';
 import { HomeFeedAd } from '../components/Ad';
+import { getBackgroundImage } from '../utils/imageAssets';
 
 // 图标组件
 const TravelIcon = ({ size = 28 }: { size?: number }) => (
@@ -60,7 +61,7 @@ export default function Home() {
     <div
       className="min-h-screen py-10 px-5 flex justify-center"
       style={{
-        backgroundImage: 'url(/images/home-bg.png)',
+        backgroundImage: `url(${getBackgroundImage('home')})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',

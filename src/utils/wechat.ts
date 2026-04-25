@@ -1,4 +1,3 @@
-// 微信分享配置
 interface WechatShareConfig {
   title: string;
   desc: string;
@@ -6,7 +5,20 @@ interface WechatShareConfig {
   link: string;
 }
 
-// 微信 SDK 类型声明
+interface ResultSharePayload {
+  testTitle: string;
+  resultTitle: string;
+  testId: string;
+  resultId: string;
+  resultDescription?: string;
+}
+
+interface ShareMessage {
+  title: string;
+  text: string;
+  url: string;
+}
+
 declare global {
   interface Window {
     wx?: {
@@ -33,28 +45,25 @@ declare global {
   }
 }
 
-// 初始化微信 JS-SDK
 export async function initWechatShare(config: WechatShareConfig): Promise<boolean> {
   const appId = import.meta.env.VITE_WECHAT_APP_ID;
 
   if (!appId || appId === 'YOUR_WECHAT_APP_ID') {
-    console.warn('微信分享未配置 AppID');
+    console.warn('Wechat share AppID is not configured');
     return false;
   }
 
-  // 动态加载微信 JS-SDK
   if (!document.getElementById('wechat-jssdk')) {
     await loadScript('https://res.wx.qq.com/connect_prod/qcloud_miniapp_jsapi_wechat_jssdk.js');
   }
 
   try {
     if (typeof window.wx !== 'undefined') {
-      // 配置分享信息
       window.wx.config({
         appId,
         timestamp: Date.now(),
         nonceStr: 'sbti-wechat-share',
-        signature: '', // 需要服务端生成
+        signature: '',
         jsApiList: ['updateAppMessageShareData', 'updateTimelineShareData'],
       });
 
@@ -76,13 +85,12 @@ export async function initWechatShare(config: WechatShareConfig): Promise<boolea
       return true;
     }
   } catch (error) {
-    console.error('微信分享初始化失败:', error);
+    console.error('Wechat share init failed:', error);
   }
 
   return false;
 }
 
-// 加载外部脚本
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
@@ -94,36 +102,92 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
-// 构建分享配置
+export function buildResultShareUrl(testId: string, resultId: string): string {
+  const url = new URL(`/result/${testId}`, window.location.origin);
+  url.searchParams.set('personality', resultId);
+  return url.toString();
+}
+
+function trimDescription(description?: string): string {
+  if (!description) return '';
+  return description.length > 48 ? `${description.slice(0, 48)}...` : description;
+}
+
+export function buildResultShareMessage(payload: ResultSharePayload): ShareMessage {
+  const url = buildResultShareUrl(payload.testId, payload.resultId);
+  const title = `我测出了「${payload.resultTitle}」`;
+  const description = trimDescription(payload.resultDescription);
+  const text = description
+    ? `我在「${payload.testTitle}」里测出了「${payload.resultTitle}」：${description}\n你也来测测看：`
+    : `我在「${payload.testTitle}」里测出了「${payload.resultTitle}」。\n你也来测测看：`;
+
+  return { title, text, url };
+}
+
 export function buildShareConfig(
   testTitle: string,
   resultTitle: string,
-  resultId: string
+  testId: string,
+  resultId: string,
+  resultDescription?: string
 ): WechatShareConfig {
-  const titleTemplate = import.meta.env.VITE_WECHAT_SHARE_TITLE || '测测你的${testTitle}人格，超准！';
-  const descTemplate = import.meta.env.VITE_WECHAT_SHARE_DESC || '我测试结果是${resultTitle}，你也来试试吧~';
-
-  const title = titleTemplate.replace('${testTitle}', testTitle);
-  const desc = descTemplate.replace('${resultTitle}', resultTitle);
+  const message = buildResultShareMessage({
+    testTitle,
+    resultTitle,
+    testId,
+    resultId,
+    resultDescription,
+  });
   const icon = import.meta.env.VITE_WECHAT_SHARE_ICON || '';
-  const link = `${window.location.origin}/result/${resultId}`;
 
-  return { title, desc, icon, link };
+  return {
+    title: message.title,
+    desc: message.text.replace(/\n/g, ' '),
+    icon,
+    link: message.url,
+  };
 }
 
-// 复制链接到剪贴板（作为微信分享的降级方案）
-export async function copyShareLink(): Promise<boolean> {
+async function copyShareText(text: string): Promise<boolean> {
   try {
-    await navigator.clipboard.writeText(window.location.href);
+    await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    // 降级方案：创建临时 input
-    const input = document.createElement('input');
-    input.value = window.location.href;
-    document.body.appendChild(input);
-    input.select();
-    document.execCommand('copy');
-    document.body.removeChild(input);
-    return true;
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', 'true');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const success = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return success;
   }
+}
+
+export async function shareResult(payload: ResultSharePayload): Promise<'shared' | 'copied' | 'cancelled'> {
+  const message = buildResultShareMessage(payload);
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: message.title,
+        text: message.text,
+        url: message.url,
+      });
+      return 'shared';
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return 'cancelled';
+      }
+    }
+  }
+
+  const copied = await copyShareText(`${message.text}\n${message.url}`);
+  return copied ? 'copied' : 'cancelled';
+}
+
+export async function copyShareLink(): Promise<boolean> {
+  return copyShareText(window.location.href);
 }

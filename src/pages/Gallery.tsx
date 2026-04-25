@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronLeft, BookOpen } from 'lucide-react';
 import { TEST_CONFIGS, TestConfig } from '../data/testConfigs';
 import { GalleryFeedAd } from '../components/Ad';
+import { getBackgroundImage, getPersonalityImageFallback, getPersonalityImageSrcSet } from '../utils/imageAssets';
 
 const THEME_COLORS: Record<string, string> = {
   travel: '#10B981',
@@ -68,7 +69,7 @@ export default function Gallery() {
     <div
       className="min-h-screen pb-6"
       style={{
-        backgroundImage: 'url(/images/home-bg.png)',
+        backgroundImage: `url(${getBackgroundImage('home')})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -125,12 +126,22 @@ export default function Gallery() {
               className="bg-white/95 rounded-xl overflow-hidden shadow-sm active:scale-[0.97] transition-transform text-left"
             >
               <div className="aspect-square bg-slate-100 overflow-hidden">
-                <img
-                  src={`/images/${p.category}/${p.id}.png`}
-                  alt={p.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
+                <picture className="block w-full h-full">
+                  <source
+                    type="image/webp"
+                    srcSet={getPersonalityImageSrcSet(p.category, p.id)}
+                    sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, 50vw"
+                  />
+                  <img
+                    src={getPersonalityImageFallback(p.category, p.id)}
+                    alt={p.name}
+                    loading="lazy"
+                    decoding="async"
+                    width={384}
+                    height={384}
+                    className="block w-full h-full object-cover"
+                  />
+                </picture>
               </div>
               <div className="p-1.5 md:p-2">
                 <p className="font-bold text-[11px] md:text-[12px] text-slate-800 leading-tight mb-0.5 truncate">{p.name}</p>
@@ -163,11 +174,22 @@ export default function Gallery() {
             >
               {/* Image */}
               <div className="aspect-square bg-slate-100 relative">
-                <img
-                  src={`/images/${selected.category}/${selected.id}.png`}
-                  alt={selected.name}
-                  className="w-full h-full object-cover"
-                />
+                <picture className="block w-full h-full">
+                  <source
+                    type="image/webp"
+                    srcSet={getPersonalityImageSrcSet(selected.category, selected.id)}
+                    sizes="(min-width: 640px) 448px, 100vw"
+                  />
+                  <img
+                    src={getPersonalityImageFallback(selected.category, selected.id)}
+                    alt={selected.name}
+                    loading="eager"
+                    decoding="async"
+                    width={768}
+                    height={768}
+                    className="block w-full h-full object-cover"
+                  />
+                </picture>
                 <button
                   onClick={() => setSelected(null)}
                   className="absolute top-3 right-3 p-1.5 rounded-full bg-black/40 text-white active:bg-black/60 transition-colors"

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { TEST_CONFIGS } from '../data/testConfigs';
 import { ChevronLeft } from 'lucide-react';
+import { getBackgroundImage } from '../utils/imageAssets';
 
 // 图标组件
 const TravelIcon = ({ size = 28 }: { size?: number }) => (
@@ -55,13 +56,13 @@ const THEME_COLORS: Record<string, string> = {
 
 // 各测试答题界面的背景图
 const TEST_BACKGROUNDS: Record<string, string | undefined> = {
-  love: '/images/love-bg.png',
-  psychology: '/images/psychology-bg.png',
-  social: '/images/social-bg.png',
-  fortune: '/images/fortune-bg.png',
-  campus: '/images/campus-bg.png',
-  consumption: '/images/consumption-bg.png',
-  travel: '/images/travel-bg.png',
+  love: getBackgroundImage('love'),
+  psychology: getBackgroundImage('psychology'),
+  social: getBackgroundImage('social'),
+  fortune: getBackgroundImage('fortune'),
+  campus: getBackgroundImage('campus'),
+  consumption: getBackgroundImage('consumption'),
+  travel: getBackgroundImage('travel'),
 };
 
 export default function Test() {

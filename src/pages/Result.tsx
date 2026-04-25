@@ -4,10 +4,10 @@ import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { TEST_CONFIGS } from '../data/testConfigs';
 import { Award, Download, Image, Medal, Share, Sparkles, Trophy, type LucideIcon } from 'lucide-react';
-import { calculateScore, ScoreResult, PersonalityScore } from '../utils/scoreCalculator';
+import { calculateScore, type ScoreResult, type PersonalityScore } from '../utils/scoreCalculator';
 import { generatePoster, downloadPoster } from '../utils/poster';
-import { initWechatShare, buildShareConfig, copyShareLink } from '../utils/wechat';
-import { ResultAd } from '../components/Ad';
+import { initWechatShare, buildShareConfig, shareResult } from '../utils/wechat';
+import { getPersonalityImageFallback, getPersonalityImageSrcSet } from '../utils/imageAssets';
 
 // 图标组件
 const TravelIcon = ({ size = 28 }: { size?: number }) => (
@@ -229,7 +229,14 @@ export default function Result() {
   const resultRef = useRef<HTMLDivElement>(null);
 
   const config = id ? TEST_CONFIGS[id] : null;
-  const answers = location.state?.answers || {};
+  const answers = useMemo(
+    () => (location.state as { answers?: Record<number, string> } | null)?.answers || {},
+    [location.state]
+  );
+  const sharedPersonalityId = useMemo(
+    () => new URLSearchParams(location.search).get('personality') || '',
+    [location.search]
+  );
   const themeColor = THEME_COLORS[id || ''] || '#6366f1';
   const bgGradient = BG_GRADIENTS[id || ''] || 'from-slate-50 to-slate-100';
   const Icon = ICONS[id || ''] || TravelIcon;
@@ -239,8 +246,29 @@ export default function Result() {
   // 计算得分
   const scoreResult: ScoreResult | null = useMemo(() => {
     if (!config) return null;
-    return calculateScore(id || '', answers, config);
-  }, [id, answers, config]);
+    const calculated = calculateScore(id || '', answers, config);
+    const hasAnswered = Object.keys(answers).length > 0;
+
+    if (!sharedPersonalityId || hasAnswered) return calculated;
+
+    const sharedPersonality = calculated.personalityScores.find(p => p.id === sharedPersonalityId);
+    if (!sharedPersonality) return calculated;
+
+    const promotedPersonality: PersonalityScore = {
+      ...sharedPersonality,
+      score: Math.max(sharedPersonality.score, sharedPersonality.maxScore || 1),
+      matchPercentage: 100,
+    };
+    const remainingPersonalities = calculated.personalityScores
+      .filter(p => p.id !== promotedPersonality.id)
+      .slice(0, 2);
+
+    return {
+      ...calculated,
+      resultId: promotedPersonality.id,
+      topPersonalities: [promotedPersonality, ...remainingPersonalities],
+    };
+  }, [id, answers, config, sharedPersonalityId]);
 
   useEffect(() => {
     if (!config || !scoreResult) {
@@ -274,19 +302,34 @@ export default function Result() {
   useEffect(() => {
     if (config && scoreResult) {
       const topPersonality = scoreResult.topPersonalities[0];
-      const configShare = buildShareConfig(config.title, topPersonality?.name || '', topPersonality?.id || '');
+      const configShare = buildShareConfig(
+        config.title,
+        topPersonality?.name || '',
+        id || '',
+        topPersonality?.id || '',
+        topPersonality?.description
+      );
       initWechatShare(configShare);
     }
-  }, [config, scoreResult]);
+  }, [id, config, scoreResult]);
 
   if (!config || !scoreResult) return null;
 
   const topPersonality = scoreResult.topPersonalities[0];
 
   const handleShare = async () => {
-    const success = await copyShareLink();
-    if (success) {
-      alert('已复制链接，快去分享给朋友吧！');
+    if (!topPersonality || !id) return;
+
+    const status = await shareResult({
+      testTitle: config.title,
+      resultTitle: topPersonality.name,
+      testId: id,
+      resultId: topPersonality.id,
+      resultDescription: topPersonality.description,
+    });
+
+    if (status === 'copied') {
+      alert('已复制完整分享文案，发给朋友就能直接看到你的结果。');
     }
   };
 
@@ -298,7 +341,7 @@ export default function Result() {
       const dataUrl = await generatePoster(resultRef.current, {
         bgColor: import.meta.env.VITE_POSTER_BG_COLOR || '#ffffff',
       });
-      downloadPoster(dataUrl, `${config.title}-${topPersonality?.name}.png`);
+      downloadPoster(dataUrl, `${config.title}-${topPersonality?.name}.jpg`);
     } catch (error) {
       console.error('海报生成失败:', error);
       alert('海报生成失败，请重试');
@@ -331,11 +374,22 @@ export default function Result() {
               className="w-full mb-6 rounded-[28px] overflow-hidden shadow-lg border border-white/70 bg-white/70"
               style={{ aspectRatio: '1 / 1' }}
             >
-              <img
-                src={`/images/${id}/${topPersonality.id}.png`}
-                alt={topPersonality.name}
-                className="block w-full h-full object-contain"
-              />
+              <picture className="block w-full h-full">
+                <source
+                  type="image/webp"
+                  srcSet={getPersonalityImageSrcSet(id || '', topPersonality.id)}
+                  sizes="(min-width: 640px) 384px, calc(100vw - 96px)"
+                />
+                <img
+                  src={getPersonalityImageFallback(id || '', topPersonality.id)}
+                  alt={topPersonality.name}
+                  className="block w-full h-full object-contain"
+                  loading="eager"
+                  decoding="async"
+                  width={768}
+                  height={768}
+                />
+              </picture>
             </motion.div>
           ) : (
             <motion.div
@@ -451,7 +505,6 @@ export default function Result() {
         </div>
       </motion.div>
 
-      <ResultAd />
     </div>
   );
 }
