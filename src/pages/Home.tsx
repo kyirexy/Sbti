@@ -4,6 +4,7 @@ import { BookOpen } from 'lucide-react';
 import { motion } from 'motion/react';
 import { TEST_LIST } from '../data/testConfigs';
 import { ChevronRight } from 'lucide-react';
+import { HomeFeedAd } from '../components/Ad';
 
 // 图标组件
 const TravelIcon = ({ size = 28 }: { size?: number }) => (
@@ -120,6 +121,8 @@ export default function Home() {
             );
           })}
         </div>
+
+        <HomeFeedAd />
       </div>
     </div>
   );

@@ -5,6 +5,9 @@ interface ImportMetaEnv {
   readonly VITE_BAIDU_AD_SLOT_ID: string;
   readonly VITE_GOOGLE_ADSENSE_ENABLED: string;
   readonly VITE_GOOGLE_ADSENSE_CLIENT_ID: string;
+  readonly VITE_GOOGLE_ADSENSE_HOME_FEED_SLOT_ID: string;
+  readonly VITE_GOOGLE_ADSENSE_GALLERY_FEED_SLOT_ID: string;
+  readonly VITE_GOOGLE_ADSENSE_RESULT_SLOT_ID: string;
   readonly VITE_AD_SHOW_AFTER_COMPLETIONS: string;
   readonly VITE_AD_ONLY_ON_RESULT: string;
   readonly VITE_WECHAT_APP_ID: string;

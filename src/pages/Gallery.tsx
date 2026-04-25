@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronLeft, BookOpen } from 'lucide-react';
 import { TEST_CONFIGS, TestConfig } from '../data/testConfigs';
+import { GalleryFeedAd } from '../components/Ad';
 
 const THEME_COLORS: Record<string, string> = {
   travel: '#10B981',
@@ -138,6 +139,8 @@ export default function Gallery() {
             </motion.button>
           ))}
         </div>
+
+        <GalleryFeedAd />
       </div>
 
       {/* Modal */}

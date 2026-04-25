@@ -7,6 +7,7 @@ import { Award, Download, Image, Medal, Share, Sparkles, Trophy, type LucideIcon
 import { calculateScore, ScoreResult, PersonalityScore } from '../utils/scoreCalculator';
 import { generatePoster, downloadPoster } from '../utils/poster';
 import { initWechatShare, buildShareConfig, copyShareLink } from '../utils/wechat';
+import { ResultAd } from '../components/Ad';
 
 // 图标组件
 const TravelIcon = ({ size = 28 }: { size?: number }) => (
@@ -449,6 +450,8 @@ export default function Result() {
           </Link>
         </div>
       </motion.div>
+
+      <ResultAd />
     </div>
   );
 }
