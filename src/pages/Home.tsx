@@ -1,4 +1,4 @@
-import { Fragment, type ComponentType } from 'react';
+import { Fragment, useEffect, useState, type ComponentType } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -56,7 +56,29 @@ const THEME_COLORS: Record<string, string> = {
   love: '#EC4899',
 };
 
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() => (
+    typeof window !== 'undefined' ? window.matchMedia(query).matches : false
+  ));
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(query);
+    const handleChange = () => setMatches(mediaQuery.matches);
+
+    handleChange();
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, [query]);
+
+  return matches;
+}
+
 export default function Home() {
+  const isDesktopLayout = useMediaQuery('(min-width: 1024px)');
+
   return (
     <div
       className="min-h-screen py-10 px-5 flex justify-center"
@@ -67,20 +89,21 @@ export default function Home() {
         backgroundRepeat: 'no-repeat',
       }}
     >
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8 mt-4 flex items-center justify-center gap-3">
-          <div>
-            <h1 className="text-[28px] font-black text-slate-800 tracking-tight mb-1">趣味人格测试</h1>
-            <p className="text-slate-500 text-[15px]">发现不一样的自己</p>
+      <div className="w-full max-w-5xl lg:grid lg:grid-cols-[minmax(0,460px)_320px] lg:items-start lg:gap-8">
+        <div className="w-full max-w-md mx-auto lg:mx-0">
+          <div className="text-center mb-8 mt-4 flex items-center justify-center gap-3">
+            <div>
+              <h1 className="text-[28px] font-black text-slate-800 tracking-tight mb-1">趣味人格测试</h1>
+              <p className="text-slate-500 text-[15px]">发现不一样的自己</p>
+            </div>
+            <Link
+              to="/gallery"
+              className="shrink-0 p-3 rounded-2xl bg-white shadow-md active:scale-95 transition-transform"
+              title="人格图鉴"
+            >
+              <BookOpen size={22} className="text-slate-600" />
+            </Link>
           </div>
-          <Link
-            to="/gallery"
-            className="shrink-0 p-3 rounded-2xl bg-white shadow-md active:scale-95 transition-transform"
-            title="人格图鉴"
-          >
-            <BookOpen size={22} className="text-slate-600" />
-          </Link>
-        </div>
 
         <div className="flex flex-col gap-4">
           {TEST_LIST.map((test, i) => {
@@ -119,11 +142,17 @@ export default function Home() {
                     </div>
                   </Link>
                 </motion.div>
-                {i === 2 && <HomeFeedAd className="my-1 max-w-md" />}
+                {i === 1 && !isDesktopLayout && <HomeFeedAd className="my-1 max-w-md" />}
               </Fragment>
             );
           })}
+          </div>
         </div>
+        {isDesktopLayout && (
+          <aside className="pt-28">
+            <HomeFeedAd className="sticky top-8 max-w-[320px]" />
+          </aside>
+        )}
       </div>
     </div>
   );

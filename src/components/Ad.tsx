@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 type GoogleAdPlacement = 'home-feed' | 'gallery-feed' | 'result-bottom';
 
@@ -32,23 +32,64 @@ const AD_MIN_HEIGHT: Record<GoogleAdPlacement, number> = {
 const AD_LABEL = '\u5e7f\u544a';
 
 export function GoogleAd({ placement, className = '' }: GoogleAdProps): ReactNode {
+  const adRef = useRef<HTMLModElement>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const enabled = import.meta.env.VITE_GOOGLE_ADSENSE_ENABLED !== 'false';
   const clientId = import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-1275580456891124';
   const slotId = AD_SLOT_IDS[placement];
   const shouldRender = enabled && Boolean(clientId) && Boolean(slotId);
 
   useEffect(() => {
+    setIsCollapsed(false);
     if (!shouldRender) return;
+
+    let collapseTimer: number | undefined;
+    let observer: MutationObserver | undefined;
 
     try {
       window.adsbygoogle = window.adsbygoogle || [];
       window.adsbygoogle.push({});
+      const adElement = adRef.current;
+      const syncAdStatus = () => {
+        const status = adElement?.getAttribute('data-ad-status');
+
+        if (status === 'filled') {
+          setIsCollapsed(false);
+        } else if (status === 'unfilled' || status === 'unfill-optimized') {
+          setIsCollapsed(true);
+        }
+      };
+
+      if (adElement) {
+        observer = new MutationObserver(syncAdStatus);
+        observer.observe(adElement, {
+          attributes: true,
+          attributeFilter: ['data-ad-status'],
+        });
+      }
+
+      collapseTimer = window.setTimeout(() => {
+        const status = adElement?.getAttribute('data-ad-status');
+        const hasFrame = Boolean(adElement?.querySelector('iframe'));
+
+        if (status !== 'filled' && !hasFrame) {
+          setIsCollapsed(true);
+        }
+      }, 6000);
     } catch (error) {
       console.warn('AdSense render skipped:', error);
+      setIsCollapsed(true);
     }
+
+    return () => {
+      if (collapseTimer) {
+        window.clearTimeout(collapseTimer);
+      }
+      observer?.disconnect();
+    };
   }, [placement, shouldRender]);
 
-  if (!shouldRender) return null;
+  if (!shouldRender || isCollapsed) return null;
 
   return (
     <div
@@ -59,6 +100,7 @@ export function GoogleAd({ placement, className = '' }: GoogleAdProps): ReactNod
       <div className="rounded-2xl border border-slate-200/70 bg-white/70 px-3 py-2 shadow-[0_8px_28px_rgba(15,23,42,0.06)]">
         <div className="mb-2 text-center text-[11px] font-medium text-slate-400">{AD_LABEL}</div>
         <ins
+          ref={adRef}
           className="adsbygoogle"
           style={{ display: 'block', minHeight: `${AD_MIN_HEIGHT[placement]}px` }}
           data-ad-client={clientId}
