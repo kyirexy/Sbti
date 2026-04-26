@@ -1,4 +1,4 @@
-export function getOptimizedPersonalityImage(category: string, id: string, size: 384 | 768 = 768): string {
+export function getOptimizedPersonalityImage(category: string, id: string, size: 384 | 768 | 1024 = 768): string {
   return `/images-optimized/${category}/${id}-${size}.webp`;
 }
 
@@ -10,6 +10,7 @@ export function getPersonalityImageSrcSet(category: string, id: string): string 
   return [
     `${getOptimizedPersonalityImage(category, id, 384)} 384w`,
     `${getOptimizedPersonalityImage(category, id, 768)} 768w`,
+    `${getOptimizedPersonalityImage(category, id, 1024)} 1024w`,
   ].join(', ');
 }
 

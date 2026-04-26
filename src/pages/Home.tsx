@@ -90,40 +90,40 @@ export default function Home() {
             const personalityCount = test.personalities.length + (test.hidden_personalities?.length || 0);
 
             return (
-              <motion.div
-                key={test.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-              >
-                <Link
-                  to={`/test/${test.id}`}
-                  className="block focus:outline-none"
+              <Fragment key={test.id}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
                 >
-                  <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] active:scale-[0.98] transition-transform flex items-center gap-[18px]">
-                    <div
-                      className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 shadow-inner"
-                      style={{ background: `linear-gradient(135deg, ${themeColor}dd, ${themeColor})` }}
-                    >
-                      <Icon size={26} />
+                  <Link
+                    to={`/test/${test.id}`}
+                    className="block focus:outline-none"
+                  >
+                    <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] active:scale-[0.98] transition-transform flex items-center gap-[18px]">
+                      <div
+                        className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 shadow-inner"
+                        style={{ background: `linear-gradient(135deg, ${themeColor}dd, ${themeColor})` }}
+                      >
+                        <Icon size={26} />
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="text-[17px] font-bold text-slate-800 mb-1 leading-none">{test.title}</h2>
+                        <p className="text-slate-500 text-[13px]">
+                          {questionCount}道题 · {personalityCount}种人格
+                        </p>
+                      </div>
+                      <div className="text-slate-300">
+                        <ChevronRight size={22} />
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h2 className="text-[17px] font-bold text-slate-800 mb-1 leading-none">{test.title}</h2>
-                      <p className="text-slate-500 text-[13px]">
-                        {questionCount}道题 · {personalityCount}种人格
-                      </p>
-                    </div>
-                    <div className="text-slate-300">
-                      <ChevronRight size={22} />
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
+                  </Link>
+                </motion.div>
+                {i === 2 && <HomeFeedAd className="my-1 max-w-md" />}
+              </Fragment>
             );
           })}
         </div>
-
-        <HomeFeedAd />
       </div>
     </div>
   );

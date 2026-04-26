@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
+import { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { TEST_CONFIGS } from '../data/testConfigs';
 import { Award, Download, Image, Medal, Share, Sparkles, Trophy, type LucideIcon } from 'lucide-react';
 import { calculateScore, type ScoreResult, type PersonalityScore } from '../utils/scoreCalculator';
-import { generatePoster, downloadPoster } from '../utils/poster';
+import { downloadPoster, generateResultPoster } from '../utils/poster';
 import { initWechatShare, buildShareConfig, shareResult } from '../utils/wechat';
 import { getPersonalityImageFallback, getPersonalityImageSrcSet } from '../utils/imageAssets';
 import { ResultAd } from '../components/Ad';
@@ -227,8 +227,6 @@ export default function Result() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const resultRef = useRef<HTMLDivElement>(null);
-
   const config = id ? TEST_CONFIGS[id] : null;
   const answers = useMemo(
     () => (location.state as { answers?: Record<number, string> } | null)?.answers || {},
@@ -335,12 +333,17 @@ export default function Result() {
   };
 
   const handleGeneratePoster = async () => {
-    if (!resultRef.current) return;
+    if (!topPersonality || !id) return;
 
     setIsGenerating(true);
     try {
-      const dataUrl = await generatePoster(resultRef.current, {
-        bgColor: import.meta.env.VITE_POSTER_BG_COLOR || '#ffffff',
+      const dataUrl = await generateResultPoster({
+        testTitle: config.title,
+        resultTitle: topPersonality.name,
+        description: topPersonality.description,
+        matchPercentage: topPersonality.matchPercentage || 0,
+        imageUrl: getPersonalityImageFallback(id, topPersonality.id),
+        themeColor,
       });
       downloadPoster(dataUrl, `${config.title}-${topPersonality?.name}.jpg`);
     } catch (error) {
@@ -354,7 +357,6 @@ export default function Result() {
   return (
     <div className={`min-h-screen flex flex-col items-center py-12 px-6 bg-gradient-to-br ${bgGradient} lg:flex-row lg:items-start lg:justify-center lg:gap-8`}>
       <motion.div
-        ref={resultRef}
         id="poster-container"
         initial={{ opacity: 0, y: 30, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}

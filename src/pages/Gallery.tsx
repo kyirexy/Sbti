@@ -115,6 +115,7 @@ export default function Gallery() {
           {activeTab === 'all' ? '全部' : ALL_TABS.find(t => t.id === activeTab)?.label}
           {' · '}{filtered.length} 种人格
         </p>
+        <GalleryFeedAd className="mb-4 max-w-3xl" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
           {filtered.map((p, i) => (
             <motion.button
@@ -151,7 +152,6 @@ export default function Gallery() {
           ))}
         </div>
 
-        <GalleryFeedAd />
       </div>
 
       {/* Modal */}

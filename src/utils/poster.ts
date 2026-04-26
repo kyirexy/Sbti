@@ -8,6 +8,20 @@ interface PosterOptions {
   quality?: number;
 }
 
+interface ResultPosterOptions {
+  testTitle: string;
+  resultTitle: string;
+  description: string;
+  matchPercentage: number;
+  imageUrl: string;
+  themeColor: string;
+  bgColor?: string;
+  outputWidth?: number;
+  outputHeight?: number;
+  mimeType?: 'image/jpeg' | 'image/png';
+  quality?: number;
+}
+
 const POSTER_WIDTH = 1080;
 const POSTER_HEIGHT = 1350;
 const POSTER_PADDING = 60;
@@ -161,6 +175,203 @@ function fitCanvasIntoPoster(sourceCanvas: HTMLCanvasElement, targetCanvas: HTML
   const y = Math.round((targetCanvas.height - drawHeight) / 2);
 
   ctx.drawImage(sourceCanvas, x, y, drawWidth, drawHeight);
+}
+
+function loadPosterImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new window.Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error(`Failed to load poster image: ${src}`));
+    image.src = src;
+  });
+}
+
+function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+  fill: string
+) {
+  roundRectPath(ctx, x, y, width, height, radius);
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function drawContainImage(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  const ratio = Math.min(width / image.naturalWidth, height / image.naturalHeight);
+  const drawWidth = image.naturalWidth * ratio;
+  const drawHeight = image.naturalHeight * ratio;
+  const drawX = x + (width - drawWidth) / 2;
+  const drawY = y + (height - drawHeight) / 2;
+
+  ctx.save();
+  roundRectPath(ctx, x, y, width, height, radius);
+  ctx.clip();
+  ctx.fillStyle = '#fff7fb';
+  ctx.fillRect(x, y, width, height);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+  ctx.restore();
+}
+
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  maxLines = 99,
+  firstLineIndent = 0
+): number {
+  const chars = Array.from(text);
+  let line = '';
+  let lineIndex = 0;
+  let currentY = y;
+
+  for (let i = 0; i < chars.length; i += 1) {
+    const char = chars[i];
+    const candidate = line + char;
+    const indent = lineIndex === 0 ? firstLineIndent : 0;
+
+    if (ctx.measureText(candidate).width > maxWidth - indent && line) {
+      if (lineIndex >= maxLines - 1) {
+        let clipped = line;
+        while (ctx.measureText(`${clipped}...`).width > maxWidth - indent && clipped.length > 0) {
+          clipped = clipped.slice(0, -1);
+        }
+        ctx.fillText(`${clipped}...`, x + indent, currentY);
+        return currentY + lineHeight;
+      }
+
+      ctx.fillText(line, x + indent, currentY);
+      line = char;
+      lineIndex += 1;
+      currentY += lineHeight;
+    } else {
+      line = candidate;
+    }
+  }
+
+  if (line) {
+    const indent = lineIndex === 0 ? firstLineIndent : 0;
+    ctx.fillText(line, x + indent, currentY);
+    currentY += lineHeight;
+  }
+
+  return currentY;
+}
+
+export async function generateResultPoster(options: ResultPosterOptions): Promise<string> {
+  const {
+    testTitle,
+    resultTitle,
+    description,
+    matchPercentage,
+    imageUrl,
+    themeColor,
+    bgColor = '#fff7fb',
+    outputWidth = Number(import.meta.env.VITE_POSTER_WIDTH || POSTER_WIDTH),
+    outputHeight = Number(import.meta.env.VITE_POSTER_HEIGHT || POSTER_HEIGHT),
+    mimeType = 'image/jpeg',
+    quality = 0.95,
+  } = options;
+  const image = await loadPosterImage(imageUrl);
+  const canvas = document.createElement('canvas');
+  canvas.width = outputWidth;
+  canvas.height = outputHeight;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Unable to create poster canvas context');
+
+  drawPosterBackground(ctx, outputWidth, outputHeight, bgColor);
+
+  const cardX = 72;
+  const cardY = 64;
+  const cardW = outputWidth - cardX * 2;
+  const cardH = outputHeight - cardY * 2;
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(15, 23, 42, 0.08)';
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetY = 18;
+  drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 36, '#ffffff');
+  ctx.restore();
+
+  const imageX = cardX + 54;
+  const imageY = cardY + 48;
+  const imageW = cardW - 108;
+  const imageH = 560;
+  drawContainImage(ctx, image, imageX, imageY, imageW, imageH, 28);
+
+  const contentX = cardX + 74;
+  const contentW = cardW - 148;
+  let cursorY = imageY + imageH + 70;
+
+  ctx.fillStyle = '#6b7280';
+  ctx.font = '600 32px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(testTitle, contentX, cursorY);
+
+  cursorY += 76;
+  ctx.fillStyle = '#111827';
+  ctx.font = '800 66px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
+  cursorY = wrapText(ctx, resultTitle, contentX, cursorY, contentW, 78, 2);
+
+  cursorY += 38;
+  const labelBaseline = cursorY;
+  ctx.fillStyle = '#64748b';
+  ctx.font = '600 30px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
+  ctx.fillText('\u4eba\u683c\u5339\u914d\u5ea6', contentX, labelBaseline);
+  ctx.fillStyle = themeColor;
+  ctx.font = '800 34px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
+  const percentText = `${Math.max(0, Math.min(100, Math.round(matchPercentage)))}%`;
+  ctx.fillText(percentText, contentX + contentW - ctx.measureText(percentText).width, labelBaseline);
+
+  const progressY = labelBaseline + 28;
+  const progressH = 12;
+  drawRoundedRect(ctx, contentX, progressY, contentW, progressH, 999, 'rgba(236, 72, 153, 0.14)');
+  drawRoundedRect(ctx, contentX, progressY, contentW * Math.max(0, Math.min(1, matchPercentage / 100)), progressH, 999, themeColor);
+
+  cursorY = progressY + 74;
+  ctx.fillStyle = '#475569';
+  ctx.font = '400 36px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  wrapText(ctx, description, contentX, cursorY, contentW, 58, 5, 72);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '600 24px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
+  const footer = 'sbtiplay.fun';
+  ctx.fillText(footer, outputWidth / 2 - ctx.measureText(footer).width / 2, outputHeight - 72);
+
+  return canvas.toDataURL(mimeType, quality);
 }
 
 export async function generatePoster(
