@@ -1,11 +1,10 @@
 import { Fragment, useEffect, useState, type ComponentType } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, ChevronRight, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { TEST_LIST } from '../data/testConfigs';
-import { ChevronRight } from 'lucide-react';
 import { HomeFeedAd } from '../components/Ad';
-import { getBackgroundImage } from '../utils/imageAssets';
+import { getHomeBackgroundFallback, getHomeBackgroundImage } from '../utils/imageAssets';
 
 // 图标组件
 const TravelIcon = ({ size = 28 }: { size?: number }) => (
@@ -78,82 +77,96 @@ function useMediaQuery(query: string): boolean {
 
 export default function Home() {
   const isDesktopLayout = useMediaQuery('(min-width: 1024px)');
+  const backgroundVariant = isDesktopLayout ? 'desktop' : 'mobile';
 
   return (
-    <div
-      className="min-h-screen py-10 px-5 flex justify-center"
-      style={{
-        backgroundImage: `url(${getBackgroundImage('home')})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      <div className="w-full max-w-5xl lg:grid lg:grid-cols-[minmax(0,460px)_320px] lg:items-start lg:gap-8">
-        <div className="w-full max-w-md mx-auto lg:mx-0">
-          <div className="text-center mb-8 mt-4 flex items-center justify-center gap-3">
+    <div className="relative min-h-dvh overflow-hidden bg-[#fff7fb]">
+      <picture aria-hidden="true">
+        <source srcSet={getHomeBackgroundImage(backgroundVariant)} type="image/webp" />
+        <img
+          src={getHomeBackgroundFallback(backgroundVariant)}
+          alt=""
+          className="fixed inset-0 h-full w-full object-cover object-center"
+          loading="eager"
+          decoding="async"
+        />
+      </picture>
+      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.3)_56%,rgba(255,255,255,0.12))]" />
+      <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:grid lg:grid-cols-[minmax(0,470px)_320px] lg:items-start lg:gap-12 lg:px-8 lg:py-12">
+        <section className="w-full max-w-md mx-auto lg:mx-0 lg:pt-8">
+          <header className="mb-6 flex items-center justify-between gap-4 px-1 lg:mb-8">
             <div>
-              <h1 className="text-[28px] font-black text-slate-800 tracking-tight mb-1">趣味人格测试</h1>
-              <p className="text-slate-500 text-[15px]">发现不一样的自己</p>
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/80 bg-white/82 px-3 py-1 text-xs font-bold text-slate-600 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur-md">
+                <Sparkles size={14} className="text-pink-500" />
+                SBTI Play
+              </div>
+              <h1 className="text-[32px] font-black leading-none tracking-normal text-slate-900 drop-shadow-[0_2px_10px_rgba(255,255,255,0.9)] lg:text-[38px]">
+                趣味人格测试
+              </h1>
+              <p className="mt-2 text-[15px] font-medium text-slate-600 drop-shadow-[0_1px_8px_rgba(255,255,255,0.9)]">
+                发现不一样的自己
+              </p>
             </div>
             <Link
               to="/gallery"
-              className="shrink-0 p-3 rounded-2xl bg-white shadow-md active:scale-95 transition-transform"
+              className="shrink-0 rounded-2xl border border-white/85 bg-white/88 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.1)] backdrop-blur-md transition-transform active:scale-95"
               title="人格图鉴"
             >
               <BookOpen size={22} className="text-slate-600" />
             </Link>
-          </div>
+          </header>
 
-        <div className="flex flex-col gap-4">
-          {TEST_LIST.map((test, i) => {
-            const Icon = ICONS[test.id] || TravelIcon;
-            const themeColor = THEME_COLORS[test.id] || '#6366f1';
-            const questionCount = test.questions.length;
-            const personalityCount = test.personalities.length + (test.hidden_personalities?.length || 0);
+          <div className="flex flex-col gap-3.5 lg:gap-4">
+            {TEST_LIST.map((test, i) => {
+              const Icon = ICONS[test.id] || TravelIcon;
+              const themeColor = THEME_COLORS[test.id] || '#6366f1';
+              const questionCount = test.questions.length;
+              const personalityCount = test.personalities.length + (test.hidden_personalities?.length || 0);
 
-            return (
-              <Fragment key={test.id}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                >
-                  <Link
-                    to={`/test/${test.id}`}
-                    className="block focus:outline-none"
+              return (
+                <Fragment key={test.id}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.36, delay: i * 0.07 }}
                   >
-                    <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_20px_rgb(0,0,0,0.03)] active:scale-[0.98] transition-transform flex items-center gap-[18px]">
-                      <div
-                        className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 shadow-inner"
-                        style={{ background: `linear-gradient(135deg, ${themeColor}dd, ${themeColor})` }}
-                      >
-                        <Icon size={26} />
+                    <Link
+                      to={`/test/${test.id}`}
+                      className="group block rounded-[26px] border border-white bg-white p-4 shadow-[0_14px_34px_rgba(46,26,80,0.14)] outline-none transition-all active:scale-[0.985] lg:hover:-translate-y-0.5 lg:hover:shadow-[0_18px_42px_rgba(46,26,80,0.17)]"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div
+                          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] shadow-[inset_0_1px_0_rgba(255,255,255,0.55),0_10px_22px_rgba(15,23,42,0.12)]"
+                          style={{ background: `linear-gradient(145deg, ${themeColor}e6, ${themeColor})` }}
+                        >
+                          <Icon size={25} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h2 className="mb-1 text-[17px] font-extrabold leading-tight tracking-normal text-slate-900">
+                            {test.title}
+                          </h2>
+                          <p className="text-[13px] font-medium leading-tight text-slate-600">
+                            {questionCount}道题 · {personalityCount}种人格
+                          </p>
+                        </div>
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/70 text-slate-300 transition-colors group-hover:text-slate-500">
+                          <ChevronRight size={21} />
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h2 className="text-[17px] font-bold text-slate-800 mb-1 leading-none">{test.title}</h2>
-                        <p className="text-slate-500 text-[13px]">
-                          {questionCount}道题 · {personalityCount}种人格
-                        </p>
-                      </div>
-                      <div className="text-slate-300">
-                        <ChevronRight size={22} />
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-                {i === 1 && !isDesktopLayout && <HomeFeedAd className="my-1 max-w-md" />}
-              </Fragment>
-            );
-          })}
+                    </Link>
+                  </motion.div>
+                  {i === 1 && !isDesktopLayout && <HomeFeedAd className="my-0 max-w-md" />}
+                </Fragment>
+              );
+            })}
           </div>
-        </div>
+        </section>
         {isDesktopLayout && (
-          <aside className="pt-28">
+          <aside className="pt-[142px]">
             <HomeFeedAd className="sticky top-8 max-w-[320px]" />
           </aside>
         )}
-      </div>
+      </main>
     </div>
   );
 }

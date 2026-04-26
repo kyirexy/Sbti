@@ -17,3 +17,11 @@ export function getPersonalityImageSrcSet(category: string, id: string): string 
 export function getBackgroundImage(id: string): string {
   return `/images-optimized/backgrounds/${id}-bg.webp`;
 }
+
+export function getHomeBackgroundImage(variant: 'desktop' | 'mobile'): string {
+  return `/images-optimized/backgrounds/home-${variant}-bg.webp`;
+}
+
+export function getHomeBackgroundFallback(variant: 'desktop' | 'mobile'): string {
+  return `/images/backgrounds/home-${variant}-bg.png`;
+}
