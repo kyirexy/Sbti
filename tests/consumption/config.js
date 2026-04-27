@@ -342,6 +342,13 @@ export default {
     { id: "future_planner", name: "杞人忧天存钱罐", description: "即便你还单身，可能已经开始考虑未来孩子的教育基金和自己的养老问题了。你永远在为遥远的未来做准备，未雨绸缪是你的人生底色。这让你的生活非常稳健，但有时候也会因为想得太远而无法享受当下的快乐。" },
     { id: "retail_therapist", name: "购物疗法践行者", description: "你坚信购物车清空的那一刻，灵魂也能得到暂时的净化。无论是开心还是不开心，你都会选择用购物来放大或治愈情绪。虽然这种疗法的效果通常比较短暂，而且副作用明显（钱包变瘪），但你依然觉得这比去看心理医生便宜多了。" }
   ],
+  score_aliases: {
+    internet_famous: "status_seeker",
+    people_pleaser: "gift_anxiety",
+    quality_purist: ["quality_purist", "invisible_luxury"],
+    aesthetic_buyer: ["aesthetic_buyer", "diy_master"],
+    security_hoarder: ["security_hoarder", "accidental_hoarder"]
+  },
   hidden_personalities: [
     {
       id: "hidden_broke_artist",

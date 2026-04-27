@@ -78,6 +78,10 @@ export default function Home() {
   const isDesktopLayout = useMediaQuery('(min-width: 1024px)');
   const backgroundVariant = isDesktopLayout ? 'desktop' : 'mobile';
 
+  useEffect(() => {
+    document.title = 'SBTI Play 趣味人格测试集合 | 恋爱、心理、社交、运势人格测试';
+  }, []);
+
   return (
     <div className="relative min-h-screen min-h-dvh overflow-hidden bg-[#fff7fb]">
       <picture aria-hidden="true">

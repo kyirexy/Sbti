@@ -290,6 +290,11 @@ function wrapText(
   return currentY;
 }
 
+function clampPercentage(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
 export async function generateResultPoster(options: ResultPosterOptions): Promise<string> {
   const {
     testTitle,
@@ -304,6 +309,7 @@ export async function generateResultPoster(options: ResultPosterOptions): Promis
     mimeType = 'image/jpeg',
     quality = 0.95,
   } = options;
+  const safeMatchPercentage = clampPercentage(matchPercentage);
   const image = await loadPosterImage(imageUrl);
   const canvas = document.createElement('canvas');
   canvas.width = outputWidth;
@@ -352,24 +358,31 @@ export async function generateResultPoster(options: ResultPosterOptions): Promis
   ctx.fillText('\u4eba\u683c\u5339\u914d\u5ea6', contentX, labelBaseline);
   ctx.fillStyle = themeColor;
   ctx.font = '800 34px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
-  const percentText = `${Math.max(0, Math.min(100, Math.round(matchPercentage)))}%`;
+  const percentText = `${safeMatchPercentage}%`;
   ctx.fillText(percentText, contentX + contentW - ctx.measureText(percentText).width, labelBaseline);
 
   const progressY = labelBaseline + 28;
   const progressH = 12;
   drawRoundedRect(ctx, contentX, progressY, contentW, progressH, 999, 'rgba(236, 72, 153, 0.14)');
-  drawRoundedRect(ctx, contentX, progressY, contentW * Math.max(0, Math.min(1, matchPercentage / 100)), progressH, 999, themeColor);
+  drawRoundedRect(ctx, contentX, progressY, contentW * (safeMatchPercentage / 100), progressH, 999, themeColor);
 
   cursorY = progressY + 74;
   ctx.fillStyle = '#475569';
-  ctx.font = '400 36px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
+  ctx.font = '400 34px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
   ctx.textBaseline = 'alphabetic';
-  wrapText(ctx, description, contentX, cursorY, contentW, 58, 5, 72);
-
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 24px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
   const footer = 'sbtiplay.fun';
-  ctx.fillText(footer, outputWidth / 2 - ctx.measureText(footer).width / 2, outputHeight - 72);
+  const footerY = outputHeight - 48;
+  const footerSafeTop = footerY - 72;
+  const bodyLineHeight = 56;
+  const bodyMaxLines = Math.max(2, Math.floor((footerSafeTop - cursorY) / bodyLineHeight));
+  wrapText(ctx, description, contentX, cursorY, contentW, bodyLineHeight, bodyMaxLines, 72);
+
+  ctx.font = '700 30px "PingFang SC", "Microsoft YaHei", "HarmonyOS Sans SC", sans-serif';
+  const footerW = ctx.measureText(footer).width;
+  const footerX = outputWidth / 2 - footerW / 2;
+  drawRoundedRect(ctx, footerX - 22, footerY - 36, footerW + 44, 48, 999, 'rgba(255, 255, 255, 0.82)');
+  ctx.fillStyle = '#64748b';
+  ctx.fillText(footer, footerX, footerY);
 
   return canvas.toDataURL(mimeType, quality);
 }

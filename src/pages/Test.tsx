@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { TEST_CONFIGS } from '../data/testConfigs';
 import { ChevronLeft } from 'lucide-react';
 import { getBackgroundImage } from '../utils/imageAssets';
+import { calculateScore } from '../utils/scoreCalculator';
 
 // 图标组件
 const TravelIcon = ({ size = 28 }: { size?: number }) => (
@@ -78,6 +79,12 @@ export default function Test() {
     if (!config) navigate('/');
   }, [config, navigate]);
 
+  useEffect(() => {
+    if (config) {
+      document.title = `${config.title}在线测试 | SBTI Play 趣味人格测试`;
+    }
+  }, [config]);
+
   if (!config) return null;
 
   const currentQuestion = config.questions[currentIndex];
@@ -104,7 +111,9 @@ export default function Test() {
       // 完成 - 跳转到结果页
       setIsAnalyzing(true);
       setTimeout(() => {
-        navigate(`/result/${id}`, {
+        const result = calculateScore(id || '', newAnswers, config);
+        const resultQuery = result.resultId ? `?personality=${encodeURIComponent(result.resultId)}` : '';
+        navigate(`/result/${id}${resultQuery}`, {
           state: { answers: newAnswers },
           replace: true
         });

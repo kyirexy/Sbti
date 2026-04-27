@@ -342,6 +342,11 @@ export default {
     { id: "grateful_heart", name: "感恩充电宝", description: "你总是对生活中的一切心存感激，哪怕是很小的事。这种感恩的心态让你自带暖光，吸引了无数愿意帮助你的贵人。你的好运，很大程度上是你自己用感谢吸引来的。" },
     { id: "veteran_survivor", name: "打不死的小强", description: "运势极差？没关系，你的恢复力极强。摔倒了一百次，你能第一百零一次站起来，拍拍土继续走。你的人生弹性十足，没有什么能真正击垮你。这种顽强的生命力，本身就是一种最大的好运。" }
   ],
+  score_aliases: {
+    grateful_heart: ["grateful_heart", "nostalgia_guardian"],
+    future_planner: "future_anticipator",
+    destiny_changer: ["destiny_changer", "veteran_survivor"]
+  },
   hidden_personalities: [
     {
       id: "hidden_astrologer",

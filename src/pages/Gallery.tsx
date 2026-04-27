@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronLeft, BookOpen } from 'lucide-react';
@@ -40,6 +40,10 @@ export default function Gallery() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(category || 'all');
   const [selected, setSelected] = useState<PersonalityItem | null>(null);
+
+  useEffect(() => {
+    document.title = '人格结果图鉴 | SBTI Play 趣味人格测试集合';
+  }, []);
 
   // Build flat list of all personalities
   const allPersonalities = useMemo<PersonalityItem[]>(() => {

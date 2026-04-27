@@ -102,6 +102,25 @@ function contrastText(hex: string): string {
   return luminance > 0.62 ? '#1f2937' : '#ffffff';
 }
 
+function clampPercentage(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function getDisplayMatchPercentage(
+  personality: PersonalityScore | undefined,
+  scoreResult: ScoreResult,
+  sharedPersonalityId: string
+): number {
+  if (!personality) return 0;
+  if (personality.id === sharedPersonalityId) return 100;
+
+  const clamped = clampPercentage(personality.matchPercentage);
+  if (clamped > 0) return clamped;
+
+  return scoreResult.topPersonalities[0]?.id === personality.id ? 100 : 0;
+}
+
 const RANK_BADGE_ICONS: LucideIcon[] = [Trophy, Medal, Award];
 
 function RankBadge({ rank, themeColor }: { rank: number; themeColor: string }) {
@@ -232,6 +251,7 @@ export default function Result() {
     () => (location.state as { answers?: Record<number, string> } | null)?.answers || {},
     [location.state]
   );
+  const hasAnswered = useMemo(() => Object.keys(answers).length > 0, [answers]);
   const sharedPersonalityId = useMemo(
     () => new URLSearchParams(location.search).get('personality') || '',
     [location.search]
@@ -246,7 +266,8 @@ export default function Result() {
   const scoreResult: ScoreResult | null = useMemo(() => {
     if (!config) return null;
     const calculated = calculateScore(id || '', answers, config);
-    const hasAnswered = Object.keys(answers).length > 0;
+
+    if (!hasAnswered && !sharedPersonalityId) return null;
 
     if (!sharedPersonalityId || hasAnswered) return calculated;
 
@@ -267,11 +288,16 @@ export default function Result() {
       resultId: promotedPersonality.id,
       topPersonalities: [promotedPersonality, ...remainingPersonalities],
     };
-  }, [id, answers, config, sharedPersonalityId]);
+  }, [id, answers, config, hasAnswered, sharedPersonalityId]);
 
   useEffect(() => {
-    if (!config || !scoreResult) {
+    if (!config) {
       navigate('/');
+      return;
+    }
+
+    if (!scoreResult) {
+      navigate(id ? `/test/${id}` : '/');
       return;
     }
 
@@ -295,7 +321,7 @@ export default function Result() {
     }, 250);
 
     return () => clearInterval(interval);
-  }, [config, scoreResult, navigate, themeColor]);
+  }, [config, id, scoreResult, navigate, themeColor]);
 
   // 初始化微信分享
   useEffect(() => {
@@ -312,9 +338,19 @@ export default function Result() {
     }
   }, [id, config, scoreResult]);
 
+  useEffect(() => {
+    if (!config || !scoreResult) return;
+
+    const topPersonality = scoreResult.topPersonalities[0];
+    document.title = topPersonality
+      ? `${topPersonality.name} | ${config.title}结果 | SBTI Play`
+      : `${config.title}结果 | SBTI Play`;
+  }, [config, scoreResult]);
+
   if (!config || !scoreResult) return null;
 
   const topPersonality = scoreResult.topPersonalities[0];
+  const topMatchPercentage = getDisplayMatchPercentage(topPersonality, scoreResult, sharedPersonalityId);
 
   const handleShare = async () => {
     if (!topPersonality || !id) return;
@@ -341,7 +377,7 @@ export default function Result() {
         testTitle: config.title,
         resultTitle: topPersonality.name,
         description: topPersonality.description,
-        matchPercentage: topPersonality.matchPercentage || 0,
+        matchPercentage: topMatchPercentage,
         imageUrl: getPersonalityImageFallback(id, topPersonality.id),
         themeColor,
       });
@@ -427,12 +463,12 @@ export default function Result() {
             <div className="w-full mb-6">
               <div className="flex justify-between text-xs text-slate-400 mb-1">
                 <span>人格匹配度</span>
-                <span>{topPersonality?.matchPercentage || 0}%</span>
+                <span>{topMatchPercentage}%</span>
               </div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${topPersonality?.matchPercentage || 0}%` }}
+                  animate={{ width: `${topMatchPercentage}%` }}
                   transition={{ duration: 1, delay: 0.5 }}
                   className="h-full rounded-full"
                   style={{ backgroundColor: themeColor }}

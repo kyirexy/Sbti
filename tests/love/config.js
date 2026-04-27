@@ -341,6 +341,14 @@ export default {
     { id: "serial_monogamist", name: "纯爱战士", description: "每一段感情你都全情投入，认定了就不撒手，撞了南墙也不回头。哪怕受伤，下次依然敢为爱冲锋。你对爱情抱有最纯粹的信仰，是这个时代的稀有物种。" },
     { id: "healing_heart", name: "治愈系疗伤师", description: "你总能敏锐察觉到伴侣的情绪波动，并用温柔和理解去化解。和你在一起，再难过的心都能平静下来。你像一个移动的充电站，用爱和包容治愈着对方。" }
   ],
+  score_aliases: {
+    words_of_affirmation: "words_of_affirmation_love",
+    rational_analyzer: "rational_debater",
+    nurturing_caregiver: ["maternal_instinct", "healing_heart"],
+    secret_admirer: "friend_zone_mayor",
+    lone_wolf: "love_phobic",
+    romantic_dreamer: ["romantic_dreamer", "serial_monogamist"]
+  },
   hidden_personalities: [
     {
       id: "hidden_yandere",

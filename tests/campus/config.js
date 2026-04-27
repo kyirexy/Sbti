@@ -342,6 +342,17 @@ export default {
     { id: "nostalgic_graduate", name: "永远怀念青春者", description: "毕业多年，你依然时常梦见考场、食堂和那个蝉鸣的夏天。青春虽然散场，但它在你心里永远鲜活。你珍藏着所有的同学录、毕业照和记忆，那是一个人最宝贵的财富。" },
     { id: "tomboy_girly", name: "反差萌同学", description: "外表和性格存在巨大反差。看着像乖乖女其实是电竞大神，看着像硬汉其实喜欢可爱的小动物。你的反差感总能在不经意间给人惊喜，让人忍不住想了解更多。" }
   ],
+  score_aliases: {
+    nurturing_caregiver: "dorm_mom",
+    lone_wolf: "rebellious_loner",
+    stay_up: "late_sleeper",
+    quiet_observer: "transfer_student_mystery",
+    rational_analyzer: "debate_team_captain",
+    anxious_attacher: "exam_anxiety",
+    top_student: ["top_student", "early_bird"],
+    poker_face: "cool_kid",
+    creative: "tomboy_girly"
+  },
   hidden_personalities: [
     {
       id: "hidden_time_traveler",

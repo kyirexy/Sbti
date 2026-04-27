@@ -344,6 +344,12 @@ export default {
     { id: "golden_retriever_energy", name: "金毛犬系友人", description: "热情、忠诚、永远咧着嘴笑。你像一颗小太阳，和你待在一起就像晒到了温暖的阳光。你的快乐简单又纯粹，很容易感染身边的人。你没有什么坏心眼，最大的爱好就是贴贴和吃好吃的。" },
     { id: "black_cat_energy", name: "黑猫系友人", description: "高冷、神秘，若即若离。你越不理我，我越上头。你不轻易对人敞开心扉，但一旦认定了，就会默默守护。你的魅力在于那种捉摸不定的气质，让人忍不住想靠近。" }
   ],
+  score_aliases: {
+    quality_time_seeker: "old_soul",
+    social_giver: "gift_love_language",
+    physical_touch_hungry: "touch_hungry",
+    avoidant_loner: "dismissive_avoider"
+  },
   hidden_personalities: [
     {
       id: "hidden_lurker",
