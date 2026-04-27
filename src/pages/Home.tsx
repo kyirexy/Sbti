@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { BookOpen, ChevronRight, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { TEST_LIST } from '../data/testConfigs';
-import { HomeFeedAd } from '../components/Ad';
 import { getHomeBackgroundFallback, getHomeBackgroundImage } from '../utils/imageAssets';
 
 // 图标组件
@@ -80,7 +79,7 @@ export default function Home() {
   const backgroundVariant = isDesktopLayout ? 'desktop' : 'mobile';
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-[#fff7fb]">
+    <div className="relative min-h-screen min-h-dvh overflow-hidden bg-[#fff7fb]">
       <picture aria-hidden="true">
         <source srcSet={getHomeBackgroundImage(backgroundVariant)} type="image/webp" />
         <img
@@ -92,8 +91,8 @@ export default function Home() {
         />
       </picture>
       <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.3)_56%,rgba(255,255,255,0.12))]" />
-      <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:grid lg:grid-cols-[minmax(0,470px)_320px] lg:items-start lg:gap-12 lg:px-8 lg:py-12">
-        <section className="w-full max-w-md mx-auto lg:mx-0 lg:pt-8">
+      <main className="relative z-10 mx-auto flex min-h-screen min-h-dvh w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <section className="w-full max-w-md mx-auto lg:mx-0 lg:max-w-[900px] lg:pt-8">
           <header className="mb-6 flex items-center justify-between gap-4 px-1 lg:mb-8">
             <div>
               <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/80 bg-white/82 px-3 py-1 text-xs font-bold text-slate-600 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur-md">
@@ -116,7 +115,7 @@ export default function Home() {
             </Link>
           </header>
 
-          <div className="flex flex-col gap-3.5 lg:gap-4">
+          <div className="flex flex-col gap-3.5 lg:grid lg:max-w-[900px] lg:grid-cols-2 lg:gap-4">
             {TEST_LIST.map((test, i) => {
               const Icon = ICONS[test.id] || TravelIcon;
               const themeColor = THEME_COLORS[test.id] || '#6366f1';
@@ -155,17 +154,11 @@ export default function Home() {
                       </div>
                     </Link>
                   </motion.div>
-                  {i === 1 && !isDesktopLayout && <HomeFeedAd className="my-0 max-w-md" />}
                 </Fragment>
               );
             })}
           </div>
         </section>
-        {isDesktopLayout && (
-          <aside className="pt-[142px]">
-            <HomeFeedAd className="sticky top-8 max-w-[320px]" />
-          </aside>
-        )}
       </main>
     </div>
   );

@@ -25,6 +25,7 @@ const AD_SLOT_IDS: Record<GoogleAdPlacement, string> = {
 };
 
 const AD_LABEL = '\u5e7f\u544a';
+const ADSENSE_PAUSED = true;
 
 export function GoogleAd({ placement, className = '' }: GoogleAdProps): ReactNode {
   const adRef = useRef<HTMLModElement>(null);
@@ -32,7 +33,8 @@ export function GoogleAd({ placement, className = '' }: GoogleAdProps): ReactNod
   const enabled = import.meta.env.VITE_GOOGLE_ADSENSE_ENABLED !== 'false';
   const clientId = import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID || 'ca-pub-1275580456891124';
   const slotId = AD_SLOT_IDS[placement];
-  const shouldRender = enabled && Boolean(clientId) && Boolean(slotId);
+  // Temporarily pause all ad placements without deleting the integration code.
+  const shouldRender = !ADSENSE_PAUSED && enabled && Boolean(clientId) && Boolean(slotId);
 
   useEffect(() => {
     setRenderState('pending');
